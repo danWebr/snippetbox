@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"runtime/debug"
+	"time"
 )
 
 // Send generic 500 Internal Server Error and write error message and stack trace to errorLog
@@ -45,7 +46,12 @@ func (app *application) render(w http.ResponseWriter, status int, page string, d
 	// Write response header
 	w.WriteHeader(status)
 
-	// Execute template set and write response body
-
+	// Write buffer contents to http.ResponseWriter
 	buf.WriteTo(w)
+}
+
+func (app *application) newTemplateData(r *http.Request) *templateData {
+	return &templateData{
+		CurrentYear: time.Now().Year(),
+	}
 }
