@@ -2,8 +2,10 @@ package main
 
 import (
 	"html/template"
+	"io/fs"
 	"path/filepath"
 	"snippetbox.danwebr.net/internal/models"
+	"snippetbox.danwebr.net/ui"
 	"time"
 )
 
@@ -30,7 +32,7 @@ func newTemplateCache() (map[string]*template.Template, error) {
 	cache := map[string]*template.Template{}
 
 	// Get all .tmpl files
-	pages, err := filepath.Glob("./ui/html/pages/*.tmpl")
+	pages, err := fs.Glob(ui.Files, "html/pages/*.tmpl")
 	if err != nil {
 		return nil, err
 	}
@@ -38,17 +40,13 @@ func newTemplateCache() (map[string]*template.Template, error) {
 	for _, page := range pages {
 		name := filepath.Base(page)
 
-		ts, err := template.New(name).Funcs(functions).ParseFiles("./ui/html/base.tmpl")
-		if err != nil {
-			return nil, err
+		patterns := []string{
+			"html/base.tmpl",
+			"html/partials/*.tmpl",
+			page,
 		}
 
-		ts, err = ts.ParseGlob("./ui/html/partials/*.tmpl")
-		if err != nil {
-			return nil, err
-		}
-
-		ts, err = ts.ParseFiles(page)
+		ts, err := template.New(name).Funcs(functions).ParseFS(ui.Files, patterns...)
 		if err != nil {
 			return nil, err
 		}
