@@ -43,7 +43,6 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	data.Snippets = snippets
 
 	app.render(w, http.StatusOK, "home.tmpl", data)
-
 }
 
 // snippetView handler function
@@ -209,6 +208,12 @@ func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 
 	app.sessionManager.Put(r.Context(), "authenticatedUserID", id)
 
+	destinationRoute := app.sessionManager.PopString(r.Context(), "destinationRoute")
+	if destinationRoute != "" {
+		http.Redirect(w, r, destinationRoute, http.StatusSeeOther)
+		return
+	}
+
 	http.Redirect(w, r, fmt.Sprintf("/snippet/create"), http.StatusSeeOther)
 }
 
@@ -224,6 +229,25 @@ func (app *application) userLogoutPost(w http.ResponseWriter, r *http.Request) {
 	app.sessionManager.Put(r.Context(), "flash", "You've been logged out successfully!")
 
 	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func (app *application) accountView(w http.ResponseWriter, r *http.Request) {
+	authenticatedUserID := app.sessionManager.GetInt(r.Context(), "authenticatedUserID")
+
+	user, err := app.users.Get(authenticatedUserID)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		} else {
+			app.serverError(w, err)
+		}
+		return
+	}
+
+	data := app.newTemplateData(r)
+	data.User = user
+
+	app.render(w, http.StatusOK, "account.tmpl", data)
 }
 
 func (app *application) about(w http.ResponseWriter, r *http.Request) {
