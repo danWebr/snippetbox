@@ -208,6 +208,12 @@ func (app *application) userLoginPost(w http.ResponseWriter, r *http.Request) {
 
 	app.sessionManager.Put(r.Context(), "authenticatedUserID", id)
 
+	destinationRoute := app.sessionManager.PopString(r.Context(), "destinationRoute")
+	if destinationRoute != "" {
+		http.Redirect(w, r, destinationRoute, http.StatusSeeOther)
+		return
+	}
+
 	http.Redirect(w, r, fmt.Sprintf("/snippet/create"), http.StatusSeeOther)
 }
 
@@ -238,7 +244,10 @@ func (app *application) accountView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintf(w, "%+v", user)
+	data := app.newTemplateData(r)
+	data.User = user
+
+	app.render(w, http.StatusOK, "account.tmpl", data)
 }
 
 func (app *application) about(w http.ResponseWriter, r *http.Request) {
