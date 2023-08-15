@@ -30,6 +30,13 @@ type userLoginForm struct {
 	validator.Validator `form:"-"`
 }
 
+type accountPasswordUpdateForm struct {
+	CurrentPassword         string `form:"currentPassword"`
+	NewPassword             string `form:"newPassword"`
+	newPasswordConfirmation string `form:"newPasswordConfirmation"`
+	validator.Validator     `form:"-"`
+}
+
 // home handler function
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
 
@@ -251,11 +258,19 @@ func (app *application) accountView(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) accountUpdatePassword(w http.ResponseWriter, r *http.Request) {
-
+	data := app.newTemplateData(r)
+	data.Form = accountPasswordUpdateForm{}
+	app.render(w, http.StatusOK, "password.tmpl", data)
 }
 
 func (app *application) accountUpdatePasswordPost(w http.ResponseWriter, r *http.Request) {
+	var form accountPasswordUpdateForm
 
+	err := app.decodePostForm(r, &form)
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
 }
 
 func (app *application) about(w http.ResponseWriter, r *http.Request) {
