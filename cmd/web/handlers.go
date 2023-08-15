@@ -250,6 +250,14 @@ func (app *application) accountView(w http.ResponseWriter, r *http.Request) {
 	app.render(w, http.StatusOK, "account.tmpl", data)
 }
 
+func (app *application) accountUpdatePassword(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (app *application) accountUpdatePasswordPost(w http.ResponseWriter, r *http.Request) {
+
+}
+
 func (app *application) about(w http.ResponseWriter, r *http.Request) {
 	data := app.newTemplateData(r)
 	app.render(w, http.StatusOK, "about.tmpl", data)
